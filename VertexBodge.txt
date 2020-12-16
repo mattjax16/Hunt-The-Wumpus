@@ -1,0 +1,315 @@
+/*
+***Matt Bass***
+Vertex.java
+
+This is the parent class for all rooms in the wampus graph
+
+Fall 2020
+CS 231 Project 9
+*/
+
+import java.util.ArrayList;
+
+
+public class VertexBpdge implements Comparable<Vertex>{
+
+
+
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //Fields and Construtor for Vertex 
+
+
+
+    //room neighbors positioned [northy,south,east,west] if there is no connecting
+    //Vertex spot is filled with null
+    private ArrayList<Vertex> neighborRooms;
+
+    private int xPos;
+
+    private int yPos;
+
+    private boolean isVisible;
+
+    //in game of wampus is distance from wampus
+    private double distance;
+
+    private boolean visited; 
+
+    //parent of the vertex (room) on shortest path back
+    private Vertex parent;
+
+
+    //compareable method using distance
+    public int compareTo(Vertex v)
+    {
+        if(this.distance == v.getDistance())
+        {
+            return 0;
+        }
+        else if(this.distance > v.getDistance())
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    
+    
+    
+    //koriginal empty constructor
+    public Vertex()
+    {
+        this.neighborRooms = new Vertex[4];
+        this.xPos = 0;
+        this.yPos = 0;
+        this.isVisible = false;
+        this.distance = 0;
+        this.visited = false;
+        this.parent = null;
+    }
+
+
+
+    
+
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //Getter and setters for Vertex 
+
+    public void setAllNeighborRooms(ArrayList<Vertex> neighbors)
+    {
+        if(neighbors.size() == 4)
+        {
+            this.neighborRooms = neighbors;
+        }
+        else
+        {
+            System.out.println("need and array of 4 vertexs (all possible directions) to be added");
+        }
+    }
+
+
+    public void setANeighborRooms(Vertex neighbor, int direction)
+    {
+        this.neighborRooms[direction] = neighbor;
+
+    }
+
+
+    public void setPosition(int x, int y)
+    {
+        this.xPos = x;
+        this.yPos = y;
+    }
+
+    public void setXPos(int x)
+    {
+        this.xPos = x;
+    }
+
+    public void setYPos(int y)
+    {
+        this.yPos = y;
+    }
+
+    public void setVisible(boolean visible)
+    {
+        this.isVisible = visible;
+    }
+
+    public void setDistance(double distance)
+    {
+        this.distance = distance;
+    }
+
+    public void setVisited(boolean visited)
+    {
+        this.visited = visited;
+    }
+
+    public void setParent(Vertex parent)
+    {
+        this.parent = parent;
+    }
+
+
+    ///getters
+
+
+
+    public ArrayList<Vertex> getNeighborRooms()
+    {
+        return this.neighborRooms;
+    }
+
+    public int[] getPosition()
+    {
+        int[] position = new int[2];
+
+        position[0] = this.xPos;
+        position[1] = this.yPos;
+        
+        return position;
+    }
+
+
+    public int getXPos()
+    {
+        return this.xPos;
+    }
+
+
+    public int getYPos()
+    {
+        return this.yPos;
+    }
+
+    public boolean getVisible()
+    {
+        return this.isVisible;
+    }
+
+    public double getDistance()
+    {
+        return this.distance;
+    }
+
+    public boolean getVisited()
+    {
+        return this.visited;
+    }
+
+    public Vertex getParent()
+    {
+        return this.parent;
+    }
+
+
+    public ArrayList<Vertex> getNeighbors() //returns an ArrayList of type Vertex which contains all of this Vertex' neighbors.
+    {
+        ArrayList<Vertex> neighbors = new ArrayList<Vertex>();
+        for(Vertex room : this.neighborRooms)
+        {
+            neighbors.add(room);
+        }
+        return neighbors;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------
+    //Other methods and main test
+
+
+    //returns the Euclidean distance between this vertex and the other vertex based on their x and y positions.
+    public double distance( Vertex other )
+    {
+        return Math.sqrt( ((this.xPos -this.yPos) * (this.xPos -this.yPos)) + ((other.getXPos() - other.getYPos()) * (other.getXPos() - other.getYPos())));
+    }
+
+
+
+    //updates this vertex' adjacency list/map so that it connects with the other Vertex. This is a uni-directional link.
+    public void connect(Vertex neighbor)
+    {
+        this.neighborRooms[directionOf(neighbor)] = neighbor;
+
+    }
+
+    //returns the Vertex at position (x, y) if the Vertex is in the adjacency list, otherwise null.
+    public Vertex getNeighbor(int x, int y)
+    {
+        for(Vertex neighbor : this.neighborRooms)
+        {
+            if((neighbor.getXPos() == x) && (neighbor.getYPos() == y))
+            {
+                return neighbor;
+            }    
+        }
+        return null;
+    }
+
+
+
+    public int numNeighbors() //returns the number of connected vertices.
+    {
+        int numNeighbors = 0;
+
+        for(Vertex neighbor : this.neighborRooms)
+        {
+            if(neighbor != null)
+            {
+               numNeighbors++;
+            }    
+        }
+        return numNeighbors;
+    }
+
+
+
+    public String toString() //returns a String containing (at least) the number of neighbors, this Vertex' cost (distance from whomp), and the marked flag.
+    {
+        return ("@[" + numNeighbors() + "," + getDistance() + "," + getVisited() + "]@");
+    }
+
+    
+    //returns true if the x and y positions of the two vertices match.
+    public static boolean matchPosition( Vertex a, Vertex b )
+    {
+        if(a.getPosition() == b.getPosition())
+        {
+            return true;
+        }
+        return false;
+    }
+
+
+
+
+    //method to get direction of one vertex compared to the other if null they arent directly next to each other
+    public int directionOf(Vertex vert)
+    {
+        int otherX = vert.getXPos();
+        int otherY = vert.getYPos();
+
+        if(otherX == this.xPos)
+        {
+            if(this.yPos - otherY == -1)
+            {
+                return 0;
+            }
+            if(this.yPos - otherY == 1)
+            {
+                return 1;
+            }
+        }
+
+        if(otherY == this.yPos)
+        {
+            if(this.xPos - otherX == -1)
+            {
+                return 2;
+            }
+            if(this.xPos - otherX == 1)
+            {
+                return 3;
+            }
+        }
+        return 5;
+    }
+
+
+
+
+}
